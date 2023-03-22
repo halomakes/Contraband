@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MessagePack" Version="2.5.108" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.0" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Contraband.Core.Tests.Unit" />
+    </ItemGroup>
+</Project>
