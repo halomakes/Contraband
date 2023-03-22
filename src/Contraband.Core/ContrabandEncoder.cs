@@ -1,26 +1,69 @@
 ﻿using System.Collections;
+using FFmpeg.NET;
+using FFmpeg.NET.Enums;
 using MessagePack;
 
 namespace Contraband.Core;
 
 public class ContrabandEncoder
 {
+    private readonly Engine _engine;
+
+    public ContrabandEncoder(Engine engine)
+    {
+        _engine = engine;
+    }
+
     private const int MaxFrameDimension = 4096;
     private const int MaxFrameArea = MaxFrameDimension * MaxFrameDimension;
 
-    internal async Task<Stream> GenerateFrame<T>(T data, CancellationToken cancellationToken = default)
+    public async Task<Stream> GenerateVideo<T>(T data, CancellationToken cancellationToken = default)
+    {
+        var image = await GenerateFrame(data, cancellationToken);
+        var imageId = Guid.NewGuid();
+        var imagePath = $"{imageId}.png";
+        var videoPath = $"{imageId}.mp4";
+        await image.SaveAsPngAsync(imagePath, cancellationToken);
+
+        try
+        {
+            var inputFile = new InputFile(imagePath);
+            var options = new ConversionOptions
+            {
+                VideoFps = 30,
+                VideoFormat = VideoFormat.mp4,
+                VideoCodec = VideoCodec.libx264,
+                CustomHeight = image.Height,
+                CustomWidth = image.Width,
+                VideoCodecPreset = VideoCodecPreset.veryslow,
+                VideoCodecProfile = VideoCodecProfile.high,
+                PixelFormat = "yuv420p",
+                ExtraArguments = $"-loop 1 -movflags +faststart -crf 1 -tune stillimage -frames:v 4 -s {image.Width}x{image.Height}"
+            };
+            _engine.Error += (sender, args) => Console.WriteLine($"{sender} {args}");
+            await _engine.ConvertAsync(inputFile, new OutputFile(videoPath), options, cancellationToken);
+            var ms = new MemoryStream();
+            await using var fileStream = File.OpenRead(videoPath);
+            await fileStream.CopyToAsync(ms, cancellationToken);
+            return ms;
+        }
+        finally
+        {
+            File.Delete(imagePath);
+            if (File.Exists(videoPath))
+                File.Delete(videoPath);
+        }
+    }
+
+    internal async Task<Image> GenerateFrame<T>(T data, CancellationToken cancellationToken = default)
     {
         var serialized = MessagePackSerializer.Serialize(data, cancellationToken: cancellationToken);
         var header = BitConverter.GetBytes(serialized.Length);
         var payload = MergeUsingBlockCopy(header, serialized);
         if (payload.Length * 8 > MaxFrameArea)
             throw new ArgumentOutOfRangeException(nameof(data), "Value larger than permitted serializable size");
-        using var image = ConvertBytesToFrame(payload);
-        var memoryStream = new MemoryStream();
-        await image.SaveAsPngAsync("test.png", cancellationToken);
-        await image.SaveAsPngAsync(memoryStream, cancellationToken);
-        memoryStream.Seek(0, SeekOrigin.Begin);
-        return memoryStream;
+        var image = ConvertBytesToFrame(payload);
+        return image;
     }
 
     internal Image<Rgb24> ConvertBytesToFrame(byte[] payload)
