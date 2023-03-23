@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using FFmpeg.NET;
 using FFmpeg.NET.Enums;
-using MessagePack;
 
 namespace Contraband.Core;
 
@@ -14,12 +13,13 @@ public class ContrabandEncoder
         _engine = engine;
     }
 
+    private const int MinFrameDimension = 64;
     private const int MaxFrameDimension = 4096;
     private const int MaxFrameArea = MaxFrameDimension * MaxFrameDimension;
 
-    public async Task<Stream> GenerateVideo<T>(T data, CancellationToken cancellationToken = default)
+    public async Task<Stream> GenerateVideo(byte[] data, CancellationToken cancellationToken = default)
     {
-        var image = await GenerateFrame(data, cancellationToken);
+        var image = GenerateFrame(data);
         var imageId = Guid.NewGuid();
         var imagePath = $"{imageId}.png";
         var videoPath = $"{imageId}.mp4";
@@ -45,6 +45,7 @@ public class ContrabandEncoder
             var ms = new MemoryStream();
             await using var fileStream = File.OpenRead(videoPath);
             await fileStream.CopyToAsync(ms, cancellationToken);
+            ms.Seek(0, SeekOrigin.Begin);
             return ms;
         }
         finally
@@ -55,11 +56,11 @@ public class ContrabandEncoder
         }
     }
 
-    internal async Task<Image> GenerateFrame<T>(T data, CancellationToken cancellationToken = default)
+    internal Image GenerateFrame(byte[] data)
     {
-        var serialized = MessagePackSerializer.Serialize(data, cancellationToken: cancellationToken);
-        var header = BitConverter.GetBytes(serialized.Length);
-        var payload = MergeUsingBlockCopy(header, serialized);
+        var sizeHeader = BitConverter.GetBytes(data.Length);
+        var hashHeader = BitConverter.GetBytes(GetHashFromBytes(data));
+        var payload = MergeUsingBlockCopy(sizeHeader, hashHeader, data);
         if (payload.Length * 8 > MaxFrameArea)
             throw new ArgumentOutOfRangeException(nameof(data), "Value larger than permitted serializable size");
         var image = ConvertBytesToFrame(payload);
@@ -93,15 +94,28 @@ public class ContrabandEncoder
         static int CalculateDimension(int payloadSize)
         {
             var squareRoot = Math.Sqrt(payloadSize);
-            return (int)Math.Ceiling(squareRoot);
+            var neededSize = (int)Math.Ceiling(squareRoot);
+            return neededSize < MinFrameDimension ? MinFrameDimension : neededSize;
         }
     }
 
-    private static byte[] MergeUsingBlockCopy(byte[] firstArray, byte[] secondArray)
+    private static byte[] MergeUsingBlockCopy(params byte[][] arrays)
     {
-        var combinedArray = new byte[firstArray.Length + secondArray.Length];
-        Buffer.BlockCopy(firstArray, 0, combinedArray, 0, firstArray.Length);
-        Buffer.BlockCopy(secondArray, 0, combinedArray, firstArray.Length, secondArray.Length);
+        var combinedArray = new byte[arrays.Sum(a => a.Length)];
+        var currentIndex = 0;
+        foreach (var array in arrays)
+        {
+            Buffer.BlockCopy(array, 0, combinedArray, currentIndex, array.Length);
+            currentIndex += array.Length;
+        }
+
         return combinedArray;
+    }
+    
+    internal static int GetHashFromBytes(byte[] bytes)
+    {
+        var hashCode = new HashCode();
+        hashCode.AddBytes(bytes);
+        return hashCode.ToHashCode();
     }
 }

@@ -8,6 +8,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D14BA441-7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contraband.Core.Tests.Unit", "test\Contraband.Core.Tests.Unit\Contraband.Core.Tests.Unit.csproj", "{A710B5A4-6E16-463D-9FD0-8AD7944E41AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contraband.Middleware", "src\Contraband.Middleware\Contraband.Middleware.csproj", "{BD6B0C1F-919E-42A8-A511-53D3705EE829}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{B963A20B-EF6A-4E82-A3EA-8E62BA595CFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contraband.Examples.WebApi", "examples\Contraband.Examples.WebApi\Contraband.Examples.WebApi.csproj", "{A5D935AF-3B31-4301-98D0-B362AA820FFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,9 +28,19 @@ Global
 		{A710B5A4-6E16-463D-9FD0-8AD7944E41AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A710B5A4-6E16-463D-9FD0-8AD7944E41AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A710B5A4-6E16-463D-9FD0-8AD7944E41AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD6B0C1F-919E-42A8-A511-53D3705EE829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD6B0C1F-919E-42A8-A511-53D3705EE829}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD6B0C1F-919E-42A8-A511-53D3705EE829}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD6B0C1F-919E-42A8-A511-53D3705EE829}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5D935AF-3B31-4301-98D0-B362AA820FFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D935AF-3B31-4301-98D0-B362AA820FFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D935AF-3B31-4301-98D0-B362AA820FFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D935AF-3B31-4301-98D0-B362AA820FFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{73E582AA-DF7B-45C5-AB3C-498A216DDC22} = {DE9CDE37-4A74-4DB6-84D0-CDE96D482EF2}
 		{A710B5A4-6E16-463D-9FD0-8AD7944E41AB} = {D14BA441-7460-4F89-B442-8E81E7AE1EDB}
+		{BD6B0C1F-919E-42A8-A511-53D3705EE829} = {DE9CDE37-4A74-4DB6-84D0-CDE96D482EF2}
+		{A5D935AF-3B31-4301-98D0-B362AA820FFF} = {B963A20B-EF6A-4E82-A3EA-8E62BA595CFB}
 	EndGlobalSection
 EndGlobal
