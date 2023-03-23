@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Contraband.Middleware;
@@ -74,7 +73,7 @@ public static class ContrabandExtensions
 
     public static MvcOptions AddContrabandFormatters(this MvcOptions options)
     {
-        options.OutputFormatters.Insert(0, new VideoOutputFormatter());
+        options.OutputFormatters.Add(new VideoOutputFormatter());
         return options;
     }
 }
